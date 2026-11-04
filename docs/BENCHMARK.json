@@ -1,0 +1,13 @@
+{
+  "pixels": 24000000,
+  "previewDimensions": [
+    1200,
+    800
+  ],
+  "previewMs": 1055.857951,
+  "fullMs": 20898.143167000002,
+  "fitSamples": 240000,
+  "stride": 10,
+  "maxRSSMiB": 271.3203125,
+  "node": "v24.22.1"
+}

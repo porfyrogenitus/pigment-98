@@ -1,0 +1,51 @@
+
+> pigment-98@0.1.0 test
+> node --experimental-strip-types --test tests/*.test.ts
+
+✔ sRGB → Lab reference 0,0,0 (7.447439ms)
+✔ Lab → sRGB reference 0,0,0 (0.229624ms)
+✔ sRGB → Lab reference 255,255,255 (0.14305ms)
+✔ Lab → sRGB reference 255,255,255 (0.09569ms)
+✔ sRGB → Lab reference 255,0,0 (0.288477ms)
+✔ Lab → sRGB reference 255,0,0 (0.09711ms)
+✔ sRGB → Lab reference 0,255,0 (0.124512ms)
+✔ Lab → sRGB reference 0,255,0 (0.080367ms)
+✔ sRGB → Lab reference 0,0,255 (1.937226ms)
+✔ Lab → sRGB reference 0,0,255 (0.521214ms)
+✔ Colour conversion round trips sampled sRGB cube (1.850578ms)
+✔ Known symmetric matrix eigenpairs, orthonormality, and reconstruction (1.038807ms)
+✔ Dense symmetric matrix eigenpairs satisfy independent residual check (1.067144ms)
+✔ Unbiased covariance matches hand-computed outer product (1.529858ms)
+✔ Welford covariance remains stable with large offset (0.22439ms)
+✔ Fitted RGB transformation whitens covariance to target variance when uncapped (2.574437ms)
+✔ rgb: zero strength is byte-identical and never mutates input (8.669847ms)
+✔ rgb: constant-colour input remains constant at maximum strength (1.190837ms)
+✔ rgb: rank-one greyscale stays finite and achromatic (5.136583ms)
+✔ rgb: extreme near-singular settings remain bounded and deterministic (0.988372ms)
+✔ rgb: real enhancement changes correlated input (11.677637ms)
+✔ lab: zero strength is byte-identical and never mutates input (5.242818ms)
+✔ lab: constant-colour input remains constant at maximum strength (0.252659ms)
+✔ lab: rank-one greyscale stays finite and achromatic (1.415665ms)
+✔ lab: extreme near-singular settings remain bounded and deterministic (2.475568ms)
+✔ lab: real enhancement changes correlated input (4.540959ms)
+✔ Alpha is preserved and non-opaque samples do not influence covariance (1.201189ms)
+✔ All transparent or single opaque pixel input has identity model (0.386798ms)
+✔ ΔE76 is Euclidean and includes exact threshold boundary (0.264422ms)
+✔ Reference rectangle is mean of individual Lab values, with transparency excluded (1.794628ms)
+✔ Mask, inversion, overlay, selected-only and heatmap perform distinct operations (0.984949ms)
+✔ Each image adjustment has a numerical effect; brightness has known output (0.669079ms)
+✔ Region used for fitting does not silently constrain application (1.096967ms)
+✔ Full output preserves dimensions and previews share the full-resolution fitted model (8.008783ms)
+✔ Strength changes continuously before quantisation, with no large adjacent jumps (8.624098ms)
+✔ JSON recipe round-trip reproduces exact result; invalid inputs rejected (10.102813ms)
+✔ Image signature validation rejects unsupported data (0.275338ms)
+✔ Undo/redo preserves snapshots and clears redo after a divergent change (0.707206ms)
+✔ Presets retain explicit regions and references while resetting adjustment parameters (0.228987ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 538.195262
