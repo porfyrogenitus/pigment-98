@@ -1,4 +1,6 @@
-# PIGMENT 98 · v0.1.0
+# PIGMENT 98 · v0.2.0
+
+New: polygon object selection, blended local PCA, illumination flattening, surface-detail views and multiple colour references. See [release details and limitations](docs/RELEASE_0.2.md) and [GitHub Pages upgrade instructions](docs/UPGRADING.md). The original installation and v0.1 validation information below remains useful; current validation is recorded in the release notes. The GitHub integration rejected write access, so this release is supplied as a ready-built upload package.
 
 **Archaeological Ceramic & Pigment Analysis Workstation**
 
