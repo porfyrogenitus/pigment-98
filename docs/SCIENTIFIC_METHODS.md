@@ -1,4 +1,6 @@
-# Scientific methods — PIGMENT 98 v0.1.0
+# Scientific methods — PIGMENT 98
+
+For v0.2 object masks, local PCA, spatial operators, processing order, resource limits and multi-reference segmentation, see RELEASE_0.2.md. The following documents the unchanged v0.1 colour engine; local operations use the extensions explicitly described in those release notes.
 
 PIGMENT 98 is an independent experimental implementation of established colour mathematics. It does not reproduce DStretch's proprietary presets or claim pixel-identical outputs. Enhanced colours and colour-similarity masks are interpretative aids, not evidence of chemical pigment identity or the antiquity of a marking.
 

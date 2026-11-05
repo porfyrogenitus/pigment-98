@@ -8,4 +8,4 @@ export const presets:Record<string,Partial<Settings>>={
  'Surface Colour Separation':{space:'lab',strength:.65,targetSD:24,weights:[.5,1,1]},
  'High-Contrast Examination':{algorithm:'none',contrast:1.7,gamma:1.1}
 };
-export function preset(name:string,current:Settings):Settings {const fresh=defaults();return {...fresh,...presets[name],roi:current.roi,useROI:current.useROI,applyROI:current.applyROI,reference:current.reference,referenceRegion:current.referenceRegion,threshold:current.threshold,maskView:current.maskView,opacity:current.opacity,invert:current.invert};}
+export function preset(name:string,current:Settings):Settings {const fresh=defaults();return {...fresh,...presets[name],objectPolygon:current.objectPolygon,useObject:current.useObject,applyObject:current.applyObject,references:current.references,roi:current.roi,useROI:current.useROI,applyROI:current.applyROI,reference:current.reference,referenceRegion:current.referenceRegion,threshold:current.threshold,maskView:current.maskView,opacity:current.opacity,invert:current.invert};}

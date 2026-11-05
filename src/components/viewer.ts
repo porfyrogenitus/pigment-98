@@ -1,7 +1,9 @@
 import type { Rect } from '../types/index.ts';
 export type ViewMode='enhanced'|'original'|'side'|'split';
-export type Tool='pan'|'roi'|'pick'|'average'|'sample';
+export type Tool='pan'|'roi'|'pick'|'average'|'sample'|'object';
 export class Viewer {
+  polygon:[number,number][]=[];
+  onVertex:(x:number,y:number)=>void=()=>{};
   original:HTMLCanvasElement|null=null; enhanced:HTMLCanvasElement|null=null;
   mode:ViewMode='split';tool:Tool='pan';zoom=1;panX=0;panY=0;split=.5;roi:Rect|null=null;
   onRegion:(r:Rect,sample:boolean)=>void=()=>{};onPick:(x:number,y:number,average:boolean)=>void=()=>{};onStatus:(x:number|null,y:number|null)=>void=()=>{};
@@ -16,6 +18,7 @@ export class Viewer {
       const divider=this.mode==='split'&&this.tool==='pan'&&Math.abs(e.offsetX-this.canvas.clientWidth*this.split)<12;
       this.down={x:e.offsetX,y:e.offsetY,px:this.panX,py:this.panY,ix:p.x,iy:p.y,divider};
       if(!p.inside&&this.tool!=='pan'){this.down=null;return;}
+      if(this.tool==='object'){this.onVertex(p.x,p.y);this.down=null;return;}
       if(this.tool==='pick'||this.tool==='average'){this.onPick(p.x,p.y,this.tool==='average');this.down=null;}
     });
     canvas.addEventListener('pointermove',e=>{
@@ -66,5 +69,8 @@ export class Viewer {
     const label=(text:string,x:number)=>{ctx.fillStyle='#000080';ctx.fillRect(x,8,ctx.measureText(text).width+16,21);ctx.fillStyle='#fff';ctx.fillText(text,x+8,22);};
     if(this.mode==='side'){label('ORIGINAL',8);label('PROCESSED',pw+8);}else if(this.mode==='split'){label('ORIGINAL',8);label('PROCESSED',w-98);}else label(this.mode.toUpperCase(),8);
   }
-  private drawRect(ctx:CanvasRenderingContext2D,r:Rect|null,x:number,y:number){if(!r)return;ctx.strokeStyle='#ffff00';ctx.lineWidth=1;ctx.setLineDash([5,3]);ctx.strokeRect(x+r.x*this.zoom,y+r.y*this.zoom,r.width*this.zoom,r.height*this.zoom);ctx.setLineDash([]);}
+  private drawRect(ctx:CanvasRenderingContext2D,r:Rect|null,x:number,y:number){
+    if(this.polygon.length){ctx.beginPath();this.polygon.forEach(([px,py],i)=>{if(i)ctx.lineTo(x+px*this.zoom,y+py*this.zoom);else ctx.moveTo(x+px*this.zoom,y+py*this.zoom);});ctx.closePath();ctx.strokeStyle='#00ffff';ctx.lineWidth=2;ctx.stroke();}
+    if(!r)return;ctx.strokeStyle='#ffff00';ctx.lineWidth=1;ctx.setLineDash([5,3]);ctx.strokeRect(x+r.x*this.zoom,y+r.y*this.zoom,r.width*this.zoom,r.height*this.zoom);ctx.setLineDash([]);
+  }
 }

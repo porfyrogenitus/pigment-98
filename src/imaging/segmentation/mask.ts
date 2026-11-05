@@ -13,6 +13,7 @@ export function sampleRegion(image:Raster,region:Rect): {lab:Vec3; rgb:Vec3; cou
 }
 export function similarity(rgb:Vec3,alpha:number,s:Settings) {
   if(!s.reference || alpha!==255) return {selected:false,distance:Infinity};
-  const distance=deltaE76(rgbToLab(rgb),s.reference),match=distance<=s.threshold;
+  const lab=rgbToLab(rgb);
+  const distance=Math.min(...[s.reference,...s.references].map(ref=>deltaE76(lab,ref))),match=distance<=s.threshold;
   return {selected:s.invert?!match:match,distance};
 }

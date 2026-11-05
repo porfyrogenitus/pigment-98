@@ -1,6 +1,7 @@
 import type { Raster, Rect, Settings, Vec3, Model } from '../../types/index.ts';
 import { Covariance,eigenSymmetric,identity,zeros } from './matrix.ts';
 import { rgbToLab } from '../colour/lab.ts';
+import { inObject } from '../segmentation/object.ts';
 export function bounds(image: Raster,roi: Rect|null): Rect {
   if(!roi) return {x:0,y:0,width:image.width,height:image.height};
   const x=Math.max(0,Math.min(image.width-1,Math.floor(roi.x))),y=Math.max(0,Math.min(image.height-1,Math.floor(roi.y)));
@@ -8,11 +9,13 @@ export function bounds(image: Raster,roi: Rect|null): Rect {
 }
 export const inside = (x:number,y:number,r:Rect) => x>=r.x && y>=r.y && x<r.x+r.width && y<r.y+r.height;
 /** Full-resolution original; deterministic 2D grid capped at about 250,000 samples. */
-export function fitModel(image: Raster,s: Settings): Model {
-  const r=bounds(image,s.useROI?s.roi:null),stride=Math.max(1,Math.ceil(Math.sqrt(r.width*r.height/250000))),cov=new Covariance();
+export function fitModel(image: Raster,s: Settings,window?:Rect): Model {
+  const r=bounds(image,window??(s.useROI?s.roi:null)),stride=Math.max(1,Math.ceil(Math.sqrt(r.width*r.height/(window?4096:250000)))),cov=new Covariance();
   for(let y=r.y;y<r.y+r.height;y+=stride) for(let x=r.x;x<r.x+r.width;x+=stride) {
     const i=(y*image.width+x)*4;
     if(image.data[i+3]!==255) continue;
+    if(s.useObject&&!inObject(x,y,s.objectPolygon))continue;
+    if(window&&s.useROI&&s.roi&&!inside(x,y,bounds(image,s.roi)))continue;
     const rgb: Vec3=[image.data[i],image.data[i+1],image.data[i+2]];
     cov.add(s.space==='lab'?rgbToLab(rgb):rgb);
   }

@@ -3,6 +3,11 @@ export type Mat3 = [Vec3, Vec3, Vec3];
 export interface Raster { width: number; height: number; data: Uint8ClampedArray }
 export interface Rect { x: number; y: number; width: number; height: number }
 export interface Settings {
+  objectPolygon: [number,number][]; useObject: boolean; applyObject: boolean;
+  localStretch: boolean; localSize: number;
+  illumination: number; detail: number; radius: number;
+  surface: 'off'|'luminance'|'highpass'|'edges'|'directional'; direction: number;
+  references: Vec3[];
   algorithm: 'decorrelation' | 'none'; space: 'rgb' | 'lab'; strength: number;
   targetSD: number; regularisation: number; maxGain: number; weights: Vec3;
   brightness: number; contrast: number; gamma: number; saturation: number; exposure: number;
@@ -11,8 +16,10 @@ export interface Settings {
   threshold: number; opacity: number; invert: boolean; maskView: 'off' | 'overlay' | 'mask' | 'only' | 'heatmap';
 }
 export interface Model { mean: Vec3; covariance: Mat3; matrix: Mat3; eigenvalues: Vec3; count: number; stride: number; warnings: string[]; }
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 export const defaults = (): Settings => ({
+  objectPolygon: [], useObject: false, applyObject: false, localStretch: false, localSize: 512,
+  illumination: 0, detail: 0, radius: 24, surface: 'off', direction: 0, references: [],
   algorithm: 'decorrelation', space: 'lab', strength: 0, targetSD: 18, regularisation: .001, maxGain: 8, weights: [1,1,1],
   brightness: 0, contrast: 1, gamma: 1, saturation: 1, exposure: 0, black: 0, white: 255,
   roi: null, useROI: false, applyROI: false, reference: null, referenceRegion: null, threshold: 12, opacity: .45, invert: false, maskView: 'off'

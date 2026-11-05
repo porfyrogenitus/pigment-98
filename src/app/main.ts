@@ -13,6 +13,7 @@ import type {Source} from '../imaging/export/metadata.ts';
 import {labToRgb,clamp} from '../imaging/colour/lab.ts';
 import {demoFile} from './demo.ts';
 import methods from '../../docs/SCIENTIFIC_METHODS.md?raw';
+import releaseMethods from '../../docs/RELEASE_0.2.md?raw';
 import roadmap from '../../docs/ROADMAP.md?raw';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML=layout();
@@ -35,7 +36,9 @@ function sync(){
    if(input instanceof HTMLInputElement&&input.type==='checkbox')input.checked=Boolean(v);else input.value=String(v);
    const output=document.getElementById(`value-${k}`);if(output)output.textContent=typeof v==='number'?String(Math.round(v*1000)/1000):String(v);
  });
- viewer.roi=settings.roi;viewer.draw();
+ viewer.roi=settings.roi;viewer.polygon=settings.objectPolygon;viewer.draw();
+ el('object-values').textContent=`${settings.objectPolygon.length} vertices · cyan outline`;
+ el('references-count').textContent=`${settings.references.length} retained colour samples + current reference`;
  el('roi-values').textContent=settings.roi?`x ${settings.roi.x}, y ${settings.roi.y} · ${settings.roi.width} × ${settings.roi.height} px`:'Entire image';
  for(const k of ['useROI','applyROI']) (document.querySelector(`[data-setting="${k}"]`) as HTMLInputElement).disabled=!settings.roi;
  if(settings.reference){const rgb=labToRgb(settings.reference).map(v=>Math.round(clamp(v)));el('swatch').style.background=`rgb(${rgb.join(',')})`;el('sample-values').textContent=`Lab: ${settings.reference.map(x=>x.toFixed(2)).join(', ')}\nRGB ≈ ${rgb.join(', ')} · D65/2°`;}
@@ -76,7 +79,8 @@ async function openFile(file:File){
  }catch(e){notice((e as Error).message);status('Open failed');}
  finally{loading=false;if(loaded)schedule();}
 }
-function tool(t:Tool){viewer.tool=t;el('viewer').style.cursor=t==='pan'?'grab':'crosshair';el('tool-hint').textContent={pan:'Pan: drag image · Zoom: mouse wheel · Split: drag centre handle',roi:'Drag a rectangle; then choose statistics and/or application scope.',pick:'Click to sample one original pixel.',average:'Click to average a 5 × 5 region of original pixels.',sample:'Drag a rectangle to average its original CIELAB colours.'}[t];document.querySelectorAll('[data-action]').forEach(b=>b.classList.toggle('pressed',b.getAttribute('data-action')===t));}
+function tool(t:Tool){viewer.tool=t;el('viewer').style.cursor=t==='pan'?'grab':'crosshair';el('tool-hint').textContent={object:'Click around the object boundary. Choose Finish outline when complete.',pan:'Pan: drag image · Zoom: mouse wheel · Split: drag centre handle',roi:'Drag a rectangle; then choose statistics and/or application scope.',pick:'Click to sample one original pixel.',average:'Click to average a 5 × 5 region of original pixels.',sample:'Drag a rectangle to average its original CIELAB colours.'}[t];document.querySelectorAll('[data-action]').forEach(b=>b.classList.toggle('pressed',b.getAttribute('data-action')===t));}
+viewer.onVertex=(x,y)=>{if(exporting||loading||settings.objectPolygon.length>=256)return;settings={...settings,objectPolygon:[...settings.objectPolygon,[x,y]]};changed();};
 viewer.onStatus=(x,y)=>{el('coordinate-status').textContent=`x: ${x??'—'} y: ${y??'—'}`;el('zoom-status').textContent=`${(viewer.zoom*100).toFixed(1)}%`;};
 async function sample(r:Rect){if(!loaded||loading||exporting)return;const rev=revision;
  try{const result=await rpc('sample',{region:r});if(rev!==revision)return;settings={...settings,reference:result.lab,referenceRegion:r,maskView:'overlay'};changed();tool('pan');status(`Sampled ${result.count.toLocaleString()} opaque pixels`);}catch(e){notice((e as Error).message);}
@@ -114,6 +118,11 @@ async function action(a:string){
  if(!localActions.includes(a)&&!needsImage())return;
  if((exporting||loading)&&!['close-dialog','help','methods','about','roadmap'].includes(a)){notice('Please wait for the current image operation.');return;}
  switch(a){
+  case 'object':settings={...settings,objectPolygon:[],useObject:false,applyObject:false};changed();tool('object');break;
+  case 'finish-object':if(settings.objectPolygon.length<3){notice('Select at least three vertices around the object.');break;}settings={...settings,useObject:true,applyObject:true};changed();tool('pan');break;
+  case 'clear-object':settings={...settings,objectPolygon:[],useObject:false,applyObject:false};changed();tool('pan');break;
+  case 'keep-reference':if(settings.reference&&settings.references.length<16){settings={...settings,references:[...settings.references,[...settings.reference]]};changed();}else notice('Sample a colour first; up to 16 retained samples are supported.');break;
+  case 'clear-references':settings={...settings,references:[]};changed();break;
   case 'open':el<HTMLInputElement>('image-file').click();break;
   case 'demo':await openFile(await demoFile());break;
   case 'recipe':if(needsImage())el<HTMLInputElement>('recipe-file').click();break;
@@ -134,7 +143,7 @@ async function action(a:string){
   case 'advanced':el<HTMLInputElement>('advanced').checked=!el<HTMLInputElement>('advanced').checked;document.body.classList.toggle('advanced',el<HTMLInputElement>('advanced').checked);break;
   case 'close-dialog':el<HTMLDialogElement>('dialog').close();break;
   case 'help':showDialog('PIGMENT 98 — Quick start',`1. Open a JPEG, PNG, or WebP photograph. Files remain in browser memory.\n2. Choose a starting preset or increase enhancement strength. Zero strength disables decorrelation; image adjustments remain independent.\n3. Compare original and enhanced views. Wheel to zoom; Pan tool to drag. In Split view drag the centre handle.\n4. Sample one pixel, 5 × 5 pixels, or a rectangle to build an original-image CIELAB colour-similarity mask.\n5. A region can constrain statistics, processing, both, or neither. Its coordinates use the oriented original image.\n6. Export the full-resolution PNG and Settings JSON together. Reopen the original and Load JSON to repeat processing.\n\nKeyboard: Ctrl+O open; Ctrl+E export; Ctrl+Z undo; Ctrl+Shift+Z redo; + / − zoom; F fit; O toggle original; Escape pan/close menus.\n\nInteractive preview uses at most 1,200 pixels on its longest side. Choose Full-resolution view for detail inspection. Every PNG export is full resolution.\n\nWarnings: false-colour enhancement can amplify noise, stains, and compression artefacts. A colour-similarity mask is not pigment chemistry, cultural attribution, or proof of decoration. No radiometric calibration is performed. Browser decoding produces 8-bit sRGB; EXIF/ICC metadata is not retained in exports.\n\nFor privacy, no photograph is saved automatically. Closing or reloading loses the image and unsaved settings. No telemetry, account, network image processing, or cloud storage is used.`);break;
-  case 'methods':showDialog('Scientific methods',methods);break;
+  case 'methods':showDialog('Scientific methods',releaseMethods+'\n\n'+methods);break;
   case 'roadmap':showDialog('Workstation roadmap',roadmap);break;
   case 'about':showDialog('About PIGMENT 98',`PIGMENT 98 ${VERSION}\nArchaeological Ceramic & Pigment Analysis Workstation\n\nPrivate experimental research software. Independently implemented covariance-based decorrelation and ΔE76 segmentation. No DStretch source or branding is included; no equivalence is claimed.\n\nThe synthetic target is generated locally and depicts no archaeological object.\n\nRuntime: TypeScript compiled to JavaScript, Canvas, and a Web Worker. No runtime third-party dependencies. Future workstations are documented under Window → Workstation roadmap.`);break;
  }
@@ -144,6 +153,7 @@ document.querySelectorAll<HTMLDetailsElement>('.menu').forEach(m=>m.addEventList
 function updateInput(input:HTMLInputElement|HTMLSelectElement,commit:boolean){
  if(exporting||loading){sync();return;}
  const key=input.dataset.setting!;
+ if(['useObject','applyObject'].includes(key)&&settings.objectPolygon.length<3){notice('Draw and finish an object outline first.');sync();return;}
  if(key==='maskView'&&input.value!=='off'&&!settings.reference){notice('Select an original reference colour first.');sync();return;}
  let value:unknown=input instanceof HTMLInputElement&&input.type==='checkbox'?input.checked:input.value;
  if(key.startsWith('weight')){const weights=[...settings.weights] as Settings['weights'];weights[Number(key.slice(-1))]=Number(value);settings={...settings,weights};}
